@@ -1,378 +1,170 @@
-# Jenkins Freestyle Maven Project
+# Jenkins Maven Demo
 
-## 📌 Project Overview
+A beginner-friendly CI project demonstrating how to build a Java application using **Jenkins, Maven, and JUnit**.
 
-This project demonstrates how to create a **Jenkins Freestyle Project** that:
-
-* Gets Java source code from GitHub
-* Uses Maven to build the Java application
-* Compiles the Java source code
-* Packages the application into a JAR file
-* Installs the JAR into the Maven local repository
-* Displays build information in the Jenkins console
+The project is connected to GitHub and uses a Jenkins Freestyle Job to automatically checkout the source code, compile the application, run unit tests, create a JAR file, install the artifact into the Maven local repository, and archive the generated JAR.
 
 ---
 
-# 1. Technologies Used
+## 1. Project Objective
 
-| Tool              | Purpose                         |
-| ----------------- | ------------------------------- |
-| Jenkins           | CI/CD automation                |
-| Git               | Version control                 |
-| GitHub            | Source code repository          |
-| Java              | Application language            |
-| Maven             | Build and dependency management |
-| Docker            | Running Jenkins                 |
-| Git Bash          | Command-line environment        |
-| Freestyle Project | Jenkins job type                |
+The objective of this project is to understand a basic Jenkins CI workflow using Maven.
+
+### What this project demonstrates
+
+* Git and GitHub integration
+* Jenkins Freestyle Project
+* Maven build lifecycle
+* Java compilation
+* JUnit unit testing
+* JAR packaging
+* Maven local repository
+* Jenkins artifact archiving
+* Build verification
 
 ---
 
-# 2. Project Structure
+## 2. Technologies Used
 
-The project structure is:
+| Technology | Purpose                          |
+| ---------- | -------------------------------- |
+| Java       | Application programming language |
+| Maven      | Build and dependency management  |
+| JUnit 5    | Unit testing                     |
+| Jenkins    | CI automation                    |
+| Git        | Version control                  |
+| GitHub     | Source code repository           |
+| Docker     | Jenkins runtime                  |
+
+---
+
+## 3. Project Structure
 
 ```text
 jenkins-maven-demo/
 │
-├── .gitignore
 ├── pom.xml
+├── README.md
 │
 └── src/
-    └── main/
+    ├── main/
+    │   └── java/
+    │       └── App.java
+    │
+    └── test/
         └── java/
-            └── App.java
+            └── AppTest.java
 ```
 
 ---
 
-# 3. Create the Project Directory
+## 4. Application
 
-Open Git Bash:
+The main Java application is located at:
 
-```bash
-cd ~/OneDrive/Desktop/lab/jenkins
+```text
+src/main/java/App.java
 ```
 
-Create the project:
+It prints:
 
-```bash
-mkdir jenkins-maven-demo
-cd jenkins-maven-demo
+```text
+Hello from Jenkins Maven Project!
+Build successful!
 ```
 
 ---
 
-# 4. Create the Java Application
+## 5. JUnit Test
 
-Create the directory:
+The unit test is located at:
 
-```bash
-mkdir -p src/main/java
+```text
+src/test/java/AppTest.java
 ```
 
-Create the Java file:
-
-```bash
-notepad src/main/java/App.java
-```
-
-Add:
+The test verifies a simple addition:
 
 ```java
-public class App {
+int result = 2 + 3;
 
-    public static void main(String[] args) {
-        System.out.println("Hello from Jenkins Maven Project!");
-        System.out.println("Build successful!");
-    }
-}
+assertEquals(5, result);
 ```
 
-Save the file.
-
-Verify:
-
-```bash
-head -n 5 src/main/java/App.java
-```
-
-Expected:
-
-```text
-public class App {
-
-    public static void main(String[] args) {
-        System.out.println("Hello from Jenkins Maven Project!");
-        System.out.println("Build successful!");
-```
+JUnit 5 is configured in `pom.xml`.
 
 ---
 
-# 5. Create Maven `pom.xml`
+## 6. Maven Configuration
 
-Create the Maven configuration file:
+The `pom.xml` contains:
 
-```bash
-notepad pom.xml
-```
+* Project information
+* Java 17 configuration
+* JUnit 5 dependency
+* Maven Compiler Plugin
+* Maven Surefire Plugin
 
-Add:
+### JUnit dependency
 
 ```xml
-<?xml version="1.0" encoding="UTF-8"?>
-
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-
-    <modelVersion>4.0.0</modelVersion>
-
-    <groupId>com.example</groupId>
-    <artifactId>jenkins-maven-demo</artifactId>
-    <version>1.0-SNAPSHOT</version>
-
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
-            </plugin>
-        </plugins>
-    </build>
-
-</project>
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>5.11.0</version>
+    <scope>test</scope>
+</dependency>
 ```
 
-Verify:
+### Surefire plugin
 
-```bash
-head -n 3 pom.xml
-```
-
-Expected:
-
-```text
-<?xml version="1.0" encoding="UTF-8"?>
-
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-```
-
----
-
-# 6. Important Markdown Mistake
-
-During the project setup, Markdown code fences were accidentally copied into the files.
-
-For example, this was incorrectly added to `pom.xml`:
-
-````text
 ```xml
-````
-
-And this was incorrectly added to `App.java`:
-
-````text
-```java
-````
-
-These backtick characters are **not part of Java or XML syntax**.
-
-This caused errors such as:
-
-```text
-illegal character: '`'
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>3.5.4</version>
+</plugin>
 ```
 
-and:
-
-```text
-Non-parseable POM
-```
-
-### Lesson
-
-When copying code from a Markdown document, copy **only the code inside the code block**, not:
-
-```text
-```
-
-````
+Surefire is responsible for running Maven tests.
 
 ---
 
-# 7. Create `.gitignore`
+## 7. Maven Goals Used in Jenkins
 
-Create:
-
-```bash
-notepad .gitignore
-````
-
-Add:
+The Jenkins Maven build uses:
 
 ```text
-target/
-*.class
+clean package install
 ```
 
-This prevents generated Maven files from being committed to Git.
+### Meaning
+
+| Goal      | Purpose                                          |
+| --------- | ------------------------------------------------ |
+| `clean`   | Removes the previous `target` directory          |
+| `package` | Compiles code, runs tests, and creates the JAR   |
+| `install` | Installs the JAR into the Maven local repository |
 
 ---
 
-# 8. Initialize Git
+## 8. Jenkins Setup
 
-From the project directory:
+### Step 1 — Create Jenkins Job
 
-```bash
-git init
-```
+Create a new Jenkins **Freestyle Project**.
 
-Check:
-
-```bash
-git status
-```
-
----
-
-# 9. Connect GitHub Repository
-
-GitHub repository:
-
-```text
-https://github.com/alskill/jenkins-maven-demo.git
-```
-
-Add the remote:
-
-```bash
-git remote add origin https://github.com/alskill/jenkins-maven-demo.git
-```
-
-Verify:
-
-```bash
-git remote -v
-```
-
----
-
-# 10. Commit the Project
-
-Add the files:
-
-```bash
-git add .
-```
-
-Commit:
-
-```bash
-git commit -m "Add Maven Java application"
-```
-
-Push:
-
-```bash
-git branch -M main
-git push -u origin main
-```
-
----
-
-# 11. Jenkins Setup
-
-Jenkins was already running in Docker.
-
-Check:
-
-```bash
-docker ps
-```
-
-The Jenkins container was named:
-
-```text
-jenkins
-```
-
-Jenkins was accessed through:
-
-```text
-http://localhost:8080
-```
-
-### Important
-
-Do not create another Jenkins container if one already exists.
-
----
-
-# 12. Jenkins Maven Installation
-
-Jenkins already had Maven configured:
-
-```text
-Maven-3.9.9
-```
-
-Jenkins also had Java:
-
-```text
-OpenJDK 21.0.12.1 LTS
-```
-
----
-
-# 13. Create Jenkins Freestyle Project
-
-In Jenkins:
-
-```text
-New Item
-```
-
-Project name:
+Job name:
 
 ```text
 jenkins-maven-demo
 ```
 
-Select:
-
-```text
-Freestyle project
-```
-
-Click:
-
-```text
-OK
-```
-
 ---
 
-# 14. Configure GitHub
+### Step 2 — Configure GitHub
 
-Under:
-
-```text
-Source Code Management
-```
-
-Select:
-
-```text
-Git
-```
+Under **Source Code Management → Git**:
 
 Repository URL:
 
@@ -386,25 +178,17 @@ Branch:
 */main
 ```
 
-Jenkins will then clone the project from GitHub.
-
 ---
 
-# 15. Configure Maven Build
+### Step 3 — Configure Maven
 
-Under:
-
-```text
-Build Steps
-```
-
-Select:
+Under the Maven build step:
 
 ```text
 Invoke top-level Maven targets
 ```
 
-Maven Version:
+Maven installation:
 
 ```text
 Maven-3.9.9
@@ -418,65 +202,148 @@ clean package install
 
 ---
 
-# 16. Meaning of Maven Commands
+## 9. Jenkins Execute Shell
 
-## `mvn clean`
-
-Deletes the previous `target` directory.
+An optional Execute Shell step can be used to display build information.
 
 Example:
 
-```text
-target/
+```bash
+echo "=============================="
+echo " Jenkins Maven Build Details "
+echo "=============================="
+
+echo "Java Version:"
+java -version
+
+echo ""
+echo "Jenkins Workspace:"
+pwd
+
+echo ""
+echo "Project Files:"
+ls -la
+
+echo ""
+echo "Target Directory:"
+ls -lh target
+
+echo ""
+echo "Generated JAR:"
+ls -lh target/*.jar
+
+echo ""
+echo "Build Completed Successfully!"
+echo "=============================="
 ```
 
-is removed.
+> Do not use `mvn -version` in this Execute Shell unless Maven has been explicitly added to the shell's PATH. Jenkins' Maven build step uses the configured Maven installation separately.
 
 ---
 
-## `mvn compile`
+## 10. Archive Build Artifacts
 
-Compiles Java source code.
-
-The compiled `.class` files are placed inside:
+Jenkins can save files generated by the build using:
 
 ```text
-target/classes/
+Archive the artifacts
+```
+
+### Files to archive
+
+```text
+target/*.jar
+```
+
+This archives the generated JAR file.
+
+After a successful build, the JAR can be accessed from the Jenkins build page under **Artifacts**.
+
+### Why archive artifacts?
+
+Archiving allows Jenkins to keep the build output associated with a specific build.
+
+For example:
+
+```text
+Build #1
+ └── jenkins-maven-demo-1.0-SNAPSHOT.jar
+
+Build #2
+ └── jenkins-maven-demo-1.0-SNAPSHOT.jar
+```
+
+The archived artifact can be downloaded or used as an input for later deployment stages.
+
+---
+
+## 11. Jenkins Build Flow
+
+```text
+Developer
+    │
+    ▼
+GitHub
+    │
+    ▼
+Jenkins
+    │
+    ▼
+Checkout Source Code
+    │
+    ▼
+Maven
+    │
+    ├── clean
+    │
+    ├── compile
+    │
+    ├── JUnit Test
+    │
+    ├── package
+    │
+    └── install
+    │
+    ▼
+JAR File
+    │
+    ▼
+Archive Artifact
 ```
 
 ---
 
-## `mvn test`
+## 12. Expected Test Result
 
-Runs the project's tests.
-
-In this project:
+A successful Maven test should show something similar to:
 
 ```text
-No tests to run.
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
 ```
 
-because we have not created test files yet.
+The final Maven result should be:
+
+```text
+BUILD SUCCESS
+```
 
 ---
 
-## `mvn package`
+## 13. Generated JAR
 
-Packages the application.
-
-It creates:
+The Maven build creates:
 
 ```text
 target/jenkins-maven-demo-1.0-SNAPSHOT.jar
 ```
 
----
+Inside the Jenkins Docker container, the workspace location is:
 
-## `mvn install`
+```text
+/var/jenkins_home/workspace/jenkins-maven-demo/target/
+```
 
-Installs the generated artifact into Maven's local repository.
-
-Jenkins installed it under:
+The Maven local repository contains the installed artifact under:
 
 ```text
 /var/jenkins_home/.m2/repository/com/example/jenkins-maven-demo/1.0-SNAPSHOT/
@@ -484,606 +351,228 @@ Jenkins installed it under:
 
 ---
 
-# 17. Complete Maven Command
+## 14. Troubleshooting
 
-Our Jenkins job uses:
+### Problem 1 — Non-parseable POM
 
-```bash
-mvn clean package install
-```
-
-Meaning:
-
-```text
-clean
-  ↓
-Remove old target
-  ↓
-compile
-  ↓
-test
-  ↓
-package
-  ↓
-Create JAR
-  ↓
-install
-  ↓
-Store artifact in .m2
-```
-
----
-
-# 18. First Jenkins Error — Invalid `pom.xml`
-
-The first Jenkins build failed with:
+Error:
 
 ```text
 Non-parseable POM
 ```
 
-The important error was:
+Cause:
 
-```text
-only whitespace content allowed before start tag
+Markdown code fences such as:
+
+````text
+```xml
+````
+
+were accidentally added inside `pom.xml`.
+
+Solution:
+
+The `pom.xml` must contain only XML.
+
+It should start with:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
 ```
 
-The reason was that `pom.xml` contained:
+and end with:
 
-```text
-cat > pom.xml <<'EOF'
+```xml
+</project>
 ```
-
-before the XML.
-
-### Fix
-
-Opened the file:
-
-```bash
-notepad pom.xml
-```
-
-Deleted the incorrect content.
-
-Added only valid XML.
-
-Verified:
-
-```bash
-head -n 3 pom.xml
-```
-
-Then committed and pushed the fix.
 
 ---
 
-# 19. Second Jenkins Error — Invalid `App.java`
+### Problem 2 — Java compilation error
 
-After fixing `pom.xml`, Maven reached Java compilation.
+If Maven reports illegal characters or errors involving backticks, check that `App.java` does not contain Markdown code fences.
 
-Jenkins reported:
+Java files should contain only Java code.
+
+---
+
+### Problem 3 — `mvn: not found`
+
+If Execute Shell shows:
 
 ```text
-illegal character: '`'
+mvn: not found
 ```
 
-The error pointed to:
+this does not necessarily mean Maven is missing from Jenkins.
+
+The **Invoke top-level Maven targets** build step can still work because Jenkins uses the configured Maven installation.
+
+Avoid running:
+
+```bash
+mvn -version
+```
+
+from Execute Shell unless Maven is available in the shell PATH.
+
+---
+
+### Problem 4 — No tests to run
+
+If Maven shows:
 
 ```text
-src/main/java/App.java
+No tests to run.
 ```
 
-The cause was Markdown code fences inside the Java file.
+check:
 
-### Fix
+1. `AppTest.java` exists.
+2. JUnit dependency is present in `pom.xml`.
+3. Maven Surefire plugin is configured.
+4. The test class follows Maven's test directory structure.
 
-Opened:
+Example:
+
+```text
+src/test/java/AppTest.java
+```
+
+---
+
+## 15. Useful Jenkins Docker Commands
+
+Enter the Jenkins container from Git Bash:
 
 ```bash
-notepad src/main/java/App.java
+MSYS_NO_PATHCONV=1 docker exec -it jenkins /bin/bash
 ```
 
-Deleted the incorrect content.
-
-Added:
-
-```java
-public class App {
-
-    public static void main(String[] args) {
-        System.out.println("Hello from Jenkins Maven Project!");
-        System.out.println("Build successful!");
-    }
-}
-```
-
-Verified:
+Check the generated JAR:
 
 ```bash
-head -n 5 src/main/java/App.java
+docker exec jenkins ls -lh /var/jenkins_home/workspace/jenkins-maven-demo/target/
 ```
 
-Then committed and pushed:
+Check the Maven local repository:
 
 ```bash
-git add src/main/java/App.java
-git commit -m "Fix Java source file"
+docker exec jenkins ls -lh /var/jenkins_home/.m2/repository/com/example/jenkins-maven-demo/1.0-SNAPSHOT/
+```
+
+---
+
+## 16. Git Commands
+
+Clone the repository:
+
+```bash
+git clone https://github.com/alskill/jenkins-maven-demo.git
+```
+
+Check status:
+
+```bash
+git status
+```
+
+Stage changes:
+
+```bash
+git add .
+```
+
+Commit changes:
+
+```bash
+git commit -m "Update Jenkins Maven project"
+```
+
+Push to GitHub:
+
+```bash
 git push origin main
 ```
 
 ---
 
-# 20. Successful Maven Build
+## 17. Final Result
 
-After fixing both files, Jenkins successfully executed:
-
-```text
-clean
-compile
-test
-package
-install
-```
-
-The important result was:
-
-```text
-[INFO] BUILD SUCCESS
-```
-
-The JAR was created:
-
-```text
-/var/jenkins_home/workspace/jenkins-maven-demo/target/jenkins-maven-demo-1.0-SNAPSHOT.jar
-```
-
----
-
-# 21. Maven Artifact
-
-The generated JAR:
-
-```text
-jenkins-maven-demo-1.0-SNAPSHOT.jar
-```
-
-is located in:
-
-```text
-target/
-```
-
-Jenkins also installed the artifact into:
-
-```text
-/var/jenkins_home/.m2/repository/
-```
-
-The complete location is:
-
-```text
-/var/jenkins_home/.m2/repository/com/example/jenkins-maven-demo/1.0-SNAPSHOT/
-```
-
----
-
-# 22. Jenkins Workspace
-
-Jenkins checked out the project into:
-
-```text
-/var/jenkins_home/workspace/jenkins-maven-demo/
-```
-
-This is the Jenkins **workspace** for this job.
-
-The workspace contains:
-
-```text
-jenkins-maven-demo/
-├── .gitignore
-├── pom.xml
-└── src/
-    └── main/
-        └── java/
-            └── App.java
-```
-
-After Maven runs, it also contains:
-
-```text
-target/
-```
-
----
-
-# 23. Adding an Execute Shell Step
-
-We also added an additional Jenkins build step:
-
-```text
-Execute shell
-```
-
-The purpose is to display information in the Jenkins console.
-
-The shell commands are:
-
-```bash
-echo "=============================="
-echo " Jenkins Maven Build Details "
-echo "=============================="
-
-echo "Java Version:"
-java -version
-
-echo ""
-echo "Jenkins Workspace:"
-pwd
-
-echo ""
-echo "Project Files:"
-ls -la
-
-echo ""
-echo "Target Directory:"
-ls -lh target
-
-echo ""
-echo "Generated JAR:"
-ls -lh target/*.jar
-
-echo ""
-echo "Build Completed Successfully!"
-echo "=============================="
-```
-
----
-
-# 24. Maven `mvn: not found` Issue
-
-When we added:
-
-```bash
-mvn -version
-```
-
-inside the Execute Shell step, Jenkins reported:
-
-```text
-mvn: not found
-```
-
-This did **not** mean Maven was broken.
-
-The Maven build had already succeeded:
-
-```text
-[INFO] BUILD SUCCESS
-```
-
-The reason was:
-
-```text
-Invoke top-level Maven targets
-```
-
-uses the Jenkins-configured Maven installation:
-
-```text
-Maven-3.9.9
-```
-
-But a normal:
-
-```text
-Execute shell
-```
-
-step does not automatically put that Maven installation into the shell's `PATH`.
-
-Therefore:
-
-```text
-Invoke top-level Maven targets
-        ↓
-Maven-3.9.9
-        ↓
-BUILD SUCCESS
-```
-
-but:
-
-```text
-Execute shell
-        ↓
-mvn -version
-        ↓
-mvn: not found
-```
-
----
-
-# 25. Correct Execute Shell Step
-
-Do not use:
-
-```bash
-mvn -version
-```
-
-inside the shell step.
-
-Use:
-
-```bash
-echo "=============================="
-echo " Jenkins Maven Build Details "
-echo "=============================="
-
-echo "Java Version:"
-java -version
-
-echo ""
-echo "Jenkins Workspace:"
-pwd
-
-echo ""
-echo "Project Files:"
-ls -la
-
-echo ""
-echo "Target Directory:"
-ls -lh target
-
-echo ""
-echo "Generated JAR:"
-ls -lh target/*.jar
-
-echo ""
-echo "Build Completed Successfully!"
-echo "=============================="
-```
-
----
-
-# 26. Final Jenkins Build Flow
-
-The final Freestyle project flow is:
+The project successfully demonstrates a basic Jenkins CI workflow:
 
 ```text
 GitHub
-   │
-   │ Git checkout
    ↓
-Jenkins Workspace
-   │
+Jenkins
    ↓
-Invoke Maven
-   │
-   │ mvn clean package install
-   ↓
-Clean
-   │
+Maven
    ↓
 Compile
-   │
    ↓
-Test
-   │
+JUnit Test
    ↓
 Package
-   │
+   ↓
+Install
    ↓
 Create JAR
-   │
    ↓
-Install to .m2
-   │
-   ↓
-Execute Shell
-   │
-   ├── Java version
-   ├── Workspace
-   ├── Project files
-   ├── target directory
-   └── Generated JAR
-   │
+Archive Artifact
    ↓
 BUILD SUCCESS
 ```
 
----
-
-# 27. Important Jenkins Concepts Learned
-
-### Freestyle Project
-
-A Jenkins job configured mainly through the Jenkins web UI.
-
-### Source Code Management
-
-Jenkins gets source code from Git/GitHub.
-
-### Workspace
-
-Directory where Jenkins checks out and builds the project.
+### Final Jenkins configuration
 
 ```text
-/var/jenkins_home/workspace/jenkins-maven-demo/
-```
+Job:
+jenkins-maven-demo
 
-### Maven
+SCM:
+Git
 
-Build automation and dependency management tool.
+Repository:
+https://github.com/alskill/jenkins-maven-demo.git
 
-### `pom.xml`
+Branch:
+*/main
 
-Maven's main configuration file.
+Maven:
+Maven-3.9.9
 
-### Artifact
+Goals:
+clean package install
 
-The output produced by the build.
-
-In this project:
-
-```text
-jenkins-maven-demo-1.0-SNAPSHOT.jar
-```
-
-### Maven Local Repository
-
-Location where Maven stores installed artifacts:
-
-```text
-~/.m2/repository/
-```
-
-For Jenkins:
-
-```text
-/var/jenkins_home/.m2/repository/
-```
-
-### Build Success
-
-The Jenkins job completed all configured build steps successfully.
-
----
-
-# 28. Useful Troubleshooting
-
-## POM parsing error
-
-Error:
-
-```text
-Non-parseable POM
-```
-
-Check:
-
-```bash
-head -n 3 pom.xml
-```
-
-Make sure the first line is:
-
-```text
-<?xml version="1.0" encoding="UTF-8"?>
+Archive:
+target/*.jar
 ```
 
 ---
 
-## Java illegal character error
+## 18. What I Learned
 
-Error:
+Through this project, I learned:
 
-```text
-illegal character: '`'
-```
-
-Check:
-
-```bash
-head -n 5 src/main/java/App.java
-```
-
-Remove Markdown code fences such as:
-
-````text
-```java
-````
-
-and:
-
-```text
-```
-
-````
+* How Jenkins connects to a GitHub repository.
+* How Jenkins executes a Maven build.
+* How Maven compiles Java code.
+* How Maven executes JUnit tests.
+* How Maven creates a JAR file.
+* Difference between `package` and `install`.
+* How Jenkins archives build artifacts.
+* How to troubleshoot common Maven and Jenkins errors.
+* How Git commits and pushes changes to GitHub.
 
 ---
 
-## Maven not found in Git Bash
+## 19. Repository
 
-Error:
-
-```text
-mvn: command not found
-````
-
-This can happen because Maven is not installed/configured in the local Windows Git Bash PATH.
-
-Jenkins can still have its own Maven installation.
-
-Check the Jenkins Maven configuration:
+GitHub Repository:
 
 ```text
-Manage Jenkins
-→ Tools
-→ Maven installations
+https://github.com/alskill/jenkins-maven-demo
 ```
 
----
-
-## Jenkins Maven build succeeds but shell `mvn` fails
-
-This usually means Jenkins Maven is configured correctly but the Maven executable is not available in the shell's PATH.
-
-Use Jenkins':
-
-```text
-Invoke top-level Maven targets
-```
-
-for Maven commands.
-
----
-
-# 29. Final Result
-
-The project successfully demonstrates:
-
-```text
-GitHub
-  ↓
-Jenkins
-  ↓
-Git Checkout
-  ↓
-Maven
-  ↓
-Clean
-  ↓
-Compile
-  ↓
-Test
-  ↓
-Package
-  ↓
-JAR
-  ↓
-Install
-  ↓
-Maven Local Repository
-  ↓
-Jenkins Console
-  ↓
-BUILD SUCCESS
-```
-
-## 🎯 Project Status
-
-**Status: Completed Successfully ✅**
-
-The Jenkins Freestyle Maven project can now:
-
-* Clone the project from GitHub
-* Read `pom.xml`
-* Compile Java
-* Run Maven lifecycle phases
-* Create a JAR
-* Install the JAR into `.m2`
-* Display build information
-* Report `BUILD SUCCESS`
+**Project Status: Completed Successfully ✅**
