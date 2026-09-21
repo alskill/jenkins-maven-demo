@@ -1,0 +1,13 @@
+[Unit]
+Description=Jenkins Maven Demo Java Application
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/opt/jenkins-maven-demo
+ExecStart=/usr/bin/java -jar /opt/jenkins-maven-demo/target/jenkins-maven-demo-1.0-SNAPSHOT.jar
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
