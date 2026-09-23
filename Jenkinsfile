@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        GHCR_IMAGE = "ghcr.io/alskill/jenkins-maven-demo"
+    }
+
     stages {
 
         stage('Checkout Code') {
@@ -55,11 +59,12 @@ pipeline {
                     echo "Building Docker image..."
 
                     docker build \
-                        -t alskill/jenkins-maven-demo:${BUILD_NUMBER} \
-                        -t alskill/jenkins-maven-demo:latest \
+                        -t ${GHCR_IMAGE}:${BUILD_NUMBER} \
+                        -t ${GHCR_IMAGE}:latest \
                         .
 
                     echo "Docker image built successfully."
+
                     docker images | grep jenkins-maven-demo
                 '''
             }
@@ -73,15 +78,44 @@ pipeline {
                     trivy image \
                         --severity HIGH,CRITICAL \
                         --exit-code 0 \
-                        alskill/jenkins-maven-demo:${BUILD_NUMBER}
+                        ${GHCR_IMAGE}:${BUILD_NUMBER}
                 '''
+            }
+        }
+
+        stage('Push to GHCR') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'ghcr-credentials',
+                        usernameVariable: 'GHCR_USERNAME',
+                        passwordVariable: 'GHCR_TOKEN'
+                    )
+                ]) {
+                    sh '''
+                        echo "Logging in to GitHub Container Registry..."
+
+                        echo "$GHCR_TOKEN" | docker login ghcr.io \
+                            -u "$GHCR_USERNAME" \
+                            --password-stdin
+
+                        echo "Pushing image to GHCR..."
+
+                        docker push ${GHCR_IMAGE}:${BUILD_NUMBER}
+                        docker push ${GHCR_IMAGE}:latest
+
+                        echo "GHCR push successful."
+
+                        docker logout ghcr.io
+                    '''
+                }
             }
         }
 
         stage('Deploy to Docker Desktop') {
             steps {
                 sh '''
-                    echo "Stopping previous container if it exists..."
+                    echo "Stopping previous application container..."
 
                     docker rm -f jenkins-maven-demo-app 2>/dev/null || true
 
@@ -90,9 +124,10 @@ pipeline {
                     docker run -d \
                         --name jenkins-maven-demo-app \
                         -p 8081:8080 \
-                        alskill/jenkins-maven-demo:${BUILD_NUMBER}
+                        ${GHCR_IMAGE}:${BUILD_NUMBER}
 
                     echo "Container started."
+
                     docker ps | grep jenkins-maven-demo-app
                 '''
             }
@@ -101,13 +136,13 @@ pipeline {
         stage('Health Check') {
             steps {
                 sh '''
-                    echo "Checking running container..."
-
+                    echo "Waiting for application..."
                     sleep 5
 
+                    echo "=== Container ==="
                     docker ps | grep jenkins-maven-demo-app
 
-                    echo "Checking application logs..."
+                    echo "=== Application Logs ==="
                     docker logs jenkins-maven-demo-app
 
                     echo "Health check completed."
@@ -122,13 +157,19 @@ pipeline {
             ========================================
             Pipeline Successful!
             ========================================
+
             Maven Build       : SUCCESS
             Docker Build      : SUCCESS
             Trivy Scan        : COMPLETED
+            GHCR Push         : SUCCESS
             Docker Deployment : SUCCESS
+
+            GHCR Image:
+            ghcr.io/alskill/jenkins-maven-demo:latest
 
             Application:
             http://localhost:8081
+
             ========================================
             '''
         }
@@ -138,8 +179,11 @@ pipeline {
             ========================================
             Pipeline Failed
             ========================================
+
             Check the Jenkins console output.
+
             ========================================
             '''
         }
     }
+}
