@@ -1,6 +1,6 @@
-java
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 
 public class App {
 
@@ -8,7 +8,7 @@ public class App {
 
         int port = 8080;
 
-        ServerSocket serverSocket = new ServerSocket(8080);
+        ServerSocket serverSocket = new ServerSocket(port);
 
         System.out.println("Jenkins Maven Demo Application started");
         System.out.println("Application running on port " + port);
@@ -25,7 +25,7 @@ public class App {
                     socket.getOutputStream()
             );
 
-            String request = reader.readLine();
+            reader.readLine();
 
             String html = """
                     <!DOCTYPE html>
@@ -54,7 +54,7 @@ public class App {
                         <div class="box">
                             <h1>Hello Jenkins CI/CD!</h1>
                             <h2>Maven Application Deployment Successful</h2>
-                            <p>Application deployed successfully to AWS EC2.</p>
+                            <p>Application deployed successfully to Docker Desktop.</p>
                             <p>Build → Test → Deploy → Run</p>
                         </div>
                     </body>
@@ -63,7 +63,10 @@ public class App {
 
             writer.println("HTTP/1.1 200 OK");
             writer.println("Content-Type: text/html; charset=UTF-8");
-            writer.println("Content-Length: " + html.getBytes().length);
+            writer.println(
+                    "Content-Length: " +
+                    html.getBytes(StandardCharsets.UTF_8).length
+            );
             writer.println();
             writer.println(html);
             writer.flush();
@@ -72,4 +75,3 @@ public class App {
         }
     }
 }
-

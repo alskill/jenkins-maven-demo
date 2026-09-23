@@ -1,17 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        JAVA_HOME  = tool name: 'jdk21'
-        MAVEN_HOME = tool name: 'Maven-3.9.9'
-
-        EC2_HOST = '54.227.98.24'
-        EC2_USER = 'ubuntu'
-        APP_DIR  = '/opt/jenkins-maven-demo'
-
-        PATH = "${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${PATH}"
-    }
-
     stages {
 
         stage('Checkout Code') {
@@ -20,20 +9,29 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Check Tools') {
             steps {
                 sh '''
-                    echo "Building Maven application..."
-                    mvn -B clean package
+                    echo "=== Java ==="
+                    java -version
+
+                    echo "=== Maven ==="
+                    mvn -version
+
+                    echo "=== Docker ==="
+                    docker --version
+
+                    echo "=== Trivy ==="
+                    trivy --version
                 '''
             }
         }
 
-        stage('Test') {
+        stage('Build and Test') {
             steps {
                 sh '''
-                    echo "Running tests..."
-                    mvn -B test
+                    echo "Building Maven application..."
+                    mvn -B clean package
                 '''
             }
         }
@@ -51,109 +49,69 @@ pipeline {
             }
         }
 
-        stage('Deploy to EC2') {
+        stage('Docker Build') {
             steps {
-                sshagent(credentials: ['ec2-deploy-key']) {
+                sh '''
+                    echo "Building Docker image..."
 
-                    sh '''
-                        echo "Creating application directory on EC2..."
+                    docker build \
+                        -t alskill/jenkins-maven-demo:${BUILD_NUMBER} \
+                        -t alskill/jenkins-maven-demo:latest \
+                        .
 
-                        ssh -o StrictHostKeyChecking=no \
-                            ${EC2_USER}@${EC2_HOST} \
-                            "sudo mkdir -p ${APP_DIR}/target && sudo chown -R ${EC2_USER}:${EC2_USER} ${APP_DIR}"
-                    '''
-
-                    echo "Copying JAR to EC2..."
-
-                    sh '''
-                        scp -o StrictHostKeyChecking=no \
-                            target/jenkins-maven-demo-1.0-SNAPSHOT.jar \
-                            ${EC2_USER}@${EC2_HOST}:${APP_DIR}/target/
-                    '''
-
-                    echo "Copying Nginx configuration..."
-
-                    sh '''
-                        scp -o StrictHostKeyChecking=no \
-                            deploy/nginx.conf \
-                            ${EC2_USER}@${EC2_HOST}:${APP_DIR}/
-                    '''
-
-                    echo "Copying systemd service..."
-
-                    sh '''
-                        scp -o StrictHostKeyChecking=no \
-                            deploy/jenkins-maven-demo.service \
-                            ${EC2_USER}@${EC2_HOST}:${APP_DIR}/
-                    '''
-                }
+                    echo "Docker image built successfully."
+                    docker images | grep jenkins-maven-demo
+                '''
             }
         }
 
-        stage('Configure EC2') {
+        stage('Trivy Scan') {
             steps {
-                sshagent(credentials: ['ec2-deploy-key']) {
+                sh '''
+                    echo "Scanning Docker image with Trivy..."
 
-                    sh '''
-                        ssh -o StrictHostKeyChecking=no \
-                            ${EC2_USER}@${EC2_HOST} << 'REMOTE'
+                    trivy image \
+                        --severity HIGH,CRITICAL \
+                        --exit-code 0 \
+                        alskill/jenkins-maven-demo:${BUILD_NUMBER}
+                '''
+            }
+        }
 
-                        echo "Installing Nginx and curl..."
+        stage('Deploy to Docker Desktop') {
+            steps {
+                sh '''
+                    echo "Stopping previous container if it exists..."
 
-                        sudo apt-get update
-                        sudo apt-get install -y nginx curl
+                    docker rm -f jenkins-maven-demo-app 2>/dev/null || true
 
-                        echo "Configuring systemd service..."
+                    echo "Starting application container..."
 
-                        sudo cp ${APP_DIR}/jenkins-maven-demo.service \
-                            /etc/systemd/system/jenkins-maven-demo.service
+                    docker run -d \
+                        --name jenkins-maven-demo-app \
+                        -p 8081:8080 \
+                        alskill/jenkins-maven-demo:${BUILD_NUMBER}
 
-                        sudo systemctl daemon-reload
-                        sudo systemctl enable jenkins-maven-demo
-                        sudo systemctl restart jenkins-maven-demo
-
-                        echo "Configuring Nginx..."
-
-                        sudo cp ${APP_DIR}/nginx.conf \
-                            /etc/nginx/sites-available/jenkins-maven-demo
-
-                        sudo ln -sf \
-                            /etc/nginx/sites-available/jenkins-maven-demo \
-                            /etc/nginx/sites-enabled/jenkins-maven-demo
-
-                        sudo rm -f /etc/nginx/sites-enabled/default
-
-                        echo "Testing Nginx configuration..."
-
-                        sudo nginx -t
-
-                        sudo systemctl enable nginx
-                        sudo systemctl restart nginx
-
-                        echo "Checking application..."
-
-                        sudo systemctl status jenkins-maven-demo --no-pager
-
-                        echo "Deployment completed successfully."
-
-                        REMOTE
-                    '''
-                }
+                    echo "Container started."
+                    docker ps | grep jenkins-maven-demo-app
+                '''
             }
         }
 
         stage('Health Check') {
             steps {
-                sshagent(credentials: ['ec2-deploy-key']) {
+                sh '''
+                    echo "Checking running container..."
 
-                    sh '''
-                        echo "Testing application through Nginx..."
+                    sleep 5
 
-                        ssh -o StrictHostKeyChecking=no \
-                            ${EC2_USER}@${EC2_HOST} \
-                            "curl -I http://localhost"
-                    '''
-                }
+                    docker ps | grep jenkins-maven-demo-app
+
+                    echo "Checking application logs..."
+                    docker logs jenkins-maven-demo-app
+
+                    echo "Health check completed."
+                '''
             }
         }
     }
@@ -162,10 +120,15 @@ pipeline {
         success {
             echo '''
             ========================================
-            Deployment Successful!
+            Pipeline Successful!
             ========================================
+            Maven Build       : SUCCESS
+            Docker Build      : SUCCESS
+            Trivy Scan        : COMPLETED
+            Docker Deployment : SUCCESS
+
             Application:
-            http://54.227.98.24
+            http://localhost:8081
             ========================================
             '''
         }
@@ -180,4 +143,3 @@ pipeline {
             '''
         }
     }
-}
