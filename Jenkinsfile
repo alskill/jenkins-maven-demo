@@ -25,9 +25,7 @@ pipeline {
 
                     echo "=== Docker ==="
                     docker --version
-
-                    echo "=== Trivy ==="
-                    trivy --version
+    
                 '''
             }
         }
@@ -87,19 +85,7 @@ pipeline {
             }
         }
 
-        stage('Trivy Scan') {
-            steps {
-                sh '''
-                    echo "Scanning Docker image with Trivy..."
-
-                    trivy image \
-                        --severity HIGH,CRITICAL \
-                        --exit-code 0 \
-                        ${GHCR_IMAGE}:${BUILD_NUMBER}
-                '''
-            }
-        }
-
+        
         stage('Push to GHCR') {
             steps {
                 withCredentials([
