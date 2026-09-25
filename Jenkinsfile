@@ -40,6 +40,22 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                        echo "Running SonarQube code analysis..."
+
+                        mvn -B sonar:sonar \
+                            -Dsonar.projectKey=jenkins-maven-demo \
+                            -Dsonar.projectName=jenkins-maven-demo
+
+                        echo "SonarQube analysis completed."
+                    '''
+                }
+            }
+        }
+
         stage('Verify JAR') {
             steps {
                 sh '''
@@ -159,6 +175,7 @@ pipeline {
             ========================================
 
             Maven Build       : SUCCESS
+            SonarQube Analysis: COMPLETED
             Docker Build      : SUCCESS
             Trivy Scan        : COMPLETED
             GHCR Push         : SUCCESS
