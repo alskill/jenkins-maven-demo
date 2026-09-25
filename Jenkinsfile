@@ -1,5 +1,6 @@
 pipeline {
-    agent any
+    agent { label 'docker-agent' 
+    }
 
     environment {
         GHCR_IMAGE = "ghcr.io/alskill/jenkins-maven-demo"
