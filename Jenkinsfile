@@ -155,39 +155,37 @@ pipeline {
     }
 
     post {
-        success {
-            echo '''
-            ========================================
-            Pipeline Successful!
-            ========================================
+    success {
+        echo '''
+        ========================================
+        Pipeline Successful!
+        ========================================
 
-            Maven Build       : SUCCESS
-            SonarQube Analysis: COMPLETED
-            Docker Build      : SUCCESS
-            Trivy Scan        : COMPLETED
-            GHCR Push         : SUCCESS
-            Docker Deployment : SUCCESS
+        Maven Build       : SUCCESS
+        SonarQube Analysis: COMPLETED
+        Docker Build      : SUCCESS
+        GHCR Push         : SUCCESS
+        Docker Deployment : SUCCESS
 
-            GHCR Image:
-            ghcr.io/alskill/jenkins-maven-demo:latest
+        GHCR Image:
+        ghcr.io/alskill/jenkins-maven-demo:latest
 
-            Application:
-            http://localhost:8081
+        Application:
+        http://localhost:8081
 
-            ========================================
-            '''
-        }
+        ========================================
+        '''
+    }
 
-        failure {
-            echo '''
-            ========================================
-            Pipeline Failed
-            ========================================
+    failure {
+        echo '''
+        ========================================
+        Pipeline Failed
+        ========================================
 
-            Check the Jenkins console output.
+        Check the Jenkins console output.
 
-            ========================================
-            '''
-        }
+        ========================================
+        '''
     }
 }
